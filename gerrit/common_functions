@@ -1,0 +1,27 @@
+#!/bin/bash +x
+
+
+set +ex
+COMMIT_MGS_FILE=commitMessage.txt
+CHECKOUT_FOLDER="$COMPONENT"_down
+$DOWNSTREAM_GERRIT_URL="https://.../gerrit/"
+REPO_URL=$DOWNSTREAM_GERRIT_URL$COMPONENT".git"
+
+# $1 - version number (e.g. 10)
+# $2 - gerrit change IDs dictionary
+function create_change {
+    echo $1 $2
+    pushd "$COMPONENT"_down
+    git branch --track rhos-"$1".0-patches remotes/origin/rhos-"$1".0-patches
+    git checkout rhos-"$1".0-patches
+    echo `date` > foo
+    git add foo
+    echo "[test] - $COMPONENT - rhos$1" > $COMMIT_MGS_FILE
+    echo "" >> $COMMIT_MGS_FILE
+    if [ "$2" != "" ]; then
+       echo "Change-Id: $2" >> $COMMIT_MGS_FILE
+    fi
+    git commit -a -F $COMMIT_MGS_FILE
+    git review -t rhos-ci-test
+    popd
+}
